@@ -2,11 +2,16 @@ package ua.mykola.footballmanager.api.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ua.mykola.footballmanager.api.dto.PlayerDto;
 import ua.mykola.footballmanager.bl.service.PlayerService;
 
+import javax.validation.Valid;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/player")
@@ -15,7 +20,13 @@ public class PlayerController {
     private PlayerService playerService;
 
     @PostMapping()
-    public ResponseEntity<String> addPlayer(@RequestBody PlayerDto playerDto) {
+    public ResponseEntity<Object> addPlayer(@Valid @RequestBody PlayerDto playerDto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            List<String> errors = bindingResult.getFieldErrors().stream().map(e -> e.getDefaultMessage()).collect(Collectors.toList());
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("errors", errors);
+            return ResponseEntity.badRequest().body(body);
+        }
         playerService.save(playerDto);
         return ResponseEntity.ok("Player added successfully");
     }
@@ -33,7 +44,13 @@ public class PlayerController {
     }
 
     @PatchMapping()
-    public ResponseEntity<String> update(@RequestBody PlayerDto playerDto) {
+    public ResponseEntity<Object> update(@Valid @RequestBody PlayerDto playerDto, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            List<String> errors = bindingResult.getFieldErrors().stream().map(e -> e.getDefaultMessage()).collect(Collectors.toList());
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("errors", errors);
+            return ResponseEntity.badRequest().body(body);
+        }
         playerService.update(playerDto);
         return ResponseEntity.ok("Update was successful");
     }
